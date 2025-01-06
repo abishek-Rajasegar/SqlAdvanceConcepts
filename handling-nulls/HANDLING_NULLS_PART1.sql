@@ -1,0 +1,175 @@
+/**------------------------------HANDLING-NULLS----------------------------*/
+/**------------------------------NULLS-------------------------------------*/
+	-- NOTHING 
+	-- NULL IS NOT 0
+	-- NULL IS NOT EMPTY
+	-- NULL IS NOT BLANK SPACE
+
+	-- FUNCTION FOR HANDLING NULL VALUES	
+		-- ISNULL --> USED TO CONVERT NULL TO A VALUE EX: NULL -> 40
+		-- COALESCE --> USED TO CONVERT NULL TO A VALUE EX: NULL -> 40
+		-- NULLIF --> USED TO CONVERT AVALUE TO NULL EX: 40 -> NULL
+		-- IS NULL OR IS NOT NULL TO CHECK FOR NULLS
+
+/**------------------------------ISNULL-------------------------------------*/
+		-- SYNTAX:
+			-- ISNULL( VALUE , REPLACEMENT_VALUE)
+			-- ONLY TWO POSSIBLE VALUES
+			-- FASTER THAN COALESCE 
+			-- WILL DIFFER BASED ON DB
+
+/**------------------------------COALESCE-------------------------------------*/
+		-- SYNTAX:
+			-- COALESCE(VALUE , REPLACEMENT_VALUE, DEFAULT_VALUE)
+			-- IT CAN HAVE MORE THAN TWO REPLAACEMENT VALUES 
+			-- SLOWER THAN ISNULL 
+			-- IS SAME IN ALL TEH DB
+
+/**------------------------------EXAMPLE-HANDLING-NULL-------------------------*/
+
+	SELECT
+		 CUSTOMERID
+		,SCORE
+		,AVG(SCORE) OVER() AS AVG_SCORES
+		,AVG(COALESCE(SCORE,0)) OVER() AS AVG_SCORES_NULL_HANDLED
+	FROM SALES.CUSTOMERS
+
+/**--------------*/
+
+/**----------------------------HANDLING-NULL-MATH-OPERATOR------------------------*/
+
+  -- NULL + 5 = NULL (WHY BECAUSE IT IS UNKNOWN + 5 WHICH IS UNKNOWN)
+
+  SELECT 
+	CUSTOMERID,
+	FIRSTNAME,
+	LASTNAME,
+	COALESCE(FIRSTNAME,'')+' '+COALESCE(LASTNAME,'') AS FULL_NAME,
+	COALESCE(SCORE,0) + 10 SCORE
+ FROM
+	SALES.CUSTOMERS
+
+/**--------------*/
+
+/**----------------------------ISNULL-JOINS------------------------*/
+	
+	-- WE CAN USE ISNULL TO HANDLE THE NULL BEFORE JOINING TABLES
+	-- IF THE KEY COLUMN IS NULL OR MISSING VALUES
+		-- NO MATCHING ROW WILL BE FOUN BECAUSE NULL != NULL
+		-- EX: JOIN TABLE A ON ISNULL(KEY,'') = ISNULL(KEY,'') THIS WILL HANDLE THE NULL 
+		-- THIS WILL BE HANDLED ONLY IN THE JOINS THE RESULT WILL HAVE A NULL VALUE IN IT
+
+/**----------------------------ISNULL-SORTING------------------------*/
+		
+		-- NULL WILL THE FIRST VALUE WHEN SORTING DATA IN ASC ORDER
+		-- THIS MAY END UP UN PROVIDING INCORRECT RESULT
+		-- 
+
+/**-------------EXAMPLE-----------*/
+
+ SELECT 
+	CUSTOMERID,
+	SCORE
+ FROM
+	SALES.CUSTOMERS
+ ORDER BY ISNULL(SCORE,10000000) -- LAZY METHOD NPT RECCOMENDED
+
+---------------------OPTION 2
+ SELECT 
+	CUSTOMERID,
+	SCORE,
+	CASE WHEN SCORE IS NULL THEN 1 ELSE 0 END AS SORT_ORDER 
+ FROM
+	SALES.CUSTOMERS
+ ORDER BY SORT_ORDER , SCORE -- LAZY METHOD NPT RECCOMENDED
+
+/**--------------*/
+
+/**----------------------------NULLIF-SORTING------------------------*/
+		
+	-- COMPARES TWO VALUES AND RETURNS null IF THEY ARE EQUAL AND FIRST VALUE IF NOT EQUAL
+	-- THIS IS USED TO MAKE A VALUE NULL
+	-- NULLIF(PRICE,-1) PRICE(COLUMN) , -1(VALUE TO MAKE IT NULL)
+	-- 2 COLUMNS CAN BE USED INSIDE NULLIF
+
+/**-------------EXAMPLE-----------*/
+
+	SELECT
+		ORDERID,
+		SALES,
+		QUANTITY,
+		SALES/NULLIF(QUANTITY,0) AS PRICE
+	FROM SALES.Orders
+
+/**--------------*/
+
+/**--------------------------IS NULL-IS-NNOT-NULL------------------------*/
+	-- RETURNS A BOOLEN VALUE
+	-- WHERE COLUMN IS NULL 
+
+/**-------------SEARCHING-FOR-NULL-----------*/
+
+	SELECT
+		*
+	FROM SALES.Customers
+	WHERE Score IS NULL
+
+/**--------------*/
+
+/**-------------SEARCHING-FOR-NOT-NULL-----------*/
+
+	SELECT
+		*
+	FROM SALES.Customers
+	WHERE Score IS NOT NULL
+
+/**--------------*/
+
+/**--------------------------IS-NULL-ANTI-JOIN------------------------*/
+	
+	-- BASIC JOINS:
+		-- INNER
+		-- LEFT
+		-- RIGHT
+		-- FULL
+	-- OTHER JOIN TYPES:
+		-- LEFT ANTI -> THIS IS ACHIEVED BY (LEFT JOIN + IS NULL)
+		-- RIGHT ANTI -> THIS IS ACHIEVED BY (RIGHT JOIN + IS NULL)
+
+/**-------------CUSTOMERS-NOT-PLACED-ORDER-----------*/
+
+	SELECT
+		C.*,
+		O.ORDERID
+	FROM SALES.Customers C
+	LEFT JOIN Sales.Orders O ON C.CustomerID = O.CustomerID
+	WHERE O.CustomerID IS NULL
+
+/**--------------*/
+
+/**---------------------------NULL-VS-EMPTY--BLANK----------------------*/
+
+	-- NULL -> UNKNOWN -- NO DATATYPE -- NO MEMORY REQUIRED -- FAST
+	-- '' -> ZERO CHAR -- STRING(0) -- MEMORY REQUIRED -- SLOW
+	-- '  ' -> BLANK SPACES (STORED AS A VALUE) -- STRING(0) -- MEMORY REQUIRED -- SLOW
+	-- TO IDENTIY WHAT IS WHAT USE THE DATALENGTH() FUNCTION
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
